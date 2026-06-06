@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}AI Ranking — {{ job.title }} | TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <a href="/company/dashboard" style="font-size:13px;color:#9ca3af;display:inline-block;margin-bottom:14px;">← Dashboard</a>
+    <h1>🤖 AI Resume Ranking</h1>
+    <p>{{ job.title }} · {{ ranked|length }} candidates ranked by match score</p>
+  </div>
+</div>
+<div class="section">
+  <div class="container">
+    <!-- Scoring info -->
+    <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:var(--radius);padding:18px 20px;margin-bottom:24px;">
+      <div style="font-size:14px;font-weight:600;color:#1e40af;margin-bottom:10px;">How scores are calculated</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        {% for label, pct, desc in [('Skills match','40%','Resume vs required skills'),('Experience','25%','Years vs requirement'),('Education','15%','Degree level'),('Profile','20%','Completeness')] %}
+        <div style="text-align:center;background:#fff;border-radius:8px;padding:12px;">
+          <div style="font-family:var(--font-h);font-size:20px;font-weight:800;color:var(--accent);">{{ pct }}</div>
+          <div style="font-size:12px;font-weight:600;margin:2px 0;">{{ label }}</div>
+          <div style="font-size:11px;color:var(--ink3);">{{ desc }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Required skills -->
+    <div style="margin-bottom:20px;">
+      <span style="font-size:13px;font-weight:600;color:var(--ink2);margin-right:8px;">Required skills:</span>
+      {% for sk in job.skills_req.split(',') %}<span class="tag tag-blue" style="margin:2px;">{{ sk.strip() }}</span>{% endfor %}
+    </div>
+
+    {% if ranked %}
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      {% for app, score, bd in ranked %}
+      {% set rank = loop.index %}
+      <div style="background:var(--surface);border:1.5px solid {% if rank==1 %}var(--amber){% elif score>=75 %}#bbf7d0{% elif score>=50 %}var(--border){% else %}var(--border){% endif %};border-radius:var(--radius);padding:18px 20px;">
+        <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;">
+          <!-- Rank -->
+          <div style="width:36px;height:36px;border-radius:50%;background:{% if rank==1 %}#fef3c7{% elif rank==2 %}#f1f5f9{% elif rank==3 %}#fef3c7{% else %}var(--s2){% endif %};display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:14px;font-weight:800;flex-shrink:0;">
+            {% if rank==1 %}🥇{% elif rank==2 %}🥈{% elif rank==3 %}🥉{% else %}#{{ rank }}{% endif %}
+          </div>
+          <!-- Avatar -->
+          <div style="width:42px;height:42px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:15px;font-weight:700;flex-shrink:0;">{{ app.name[:2].upper() }}</div>
+          <!-- Info -->
+          <div style="flex:1;min-width:140px;">
+            <div style="font-size:14px;font-weight:700;margin-bottom:2px;">{{ app.name }}</div>
+            <div style="font-size:12px;color:var(--ink3);">{{ app.experience or 0 }} yrs exp · {{ app.education or '—' }} · {{ app.location or '—' }}</div>
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">
+              {% for sk in (app.skills or '').split(',')[:5] %}{% if sk.strip() %}<span class="tag tag-blue" style="font-size:10px;">{{ sk.strip() }}</span>{% endif %}{% endfor %}
+            </div>
+          </div>
+          <!-- Score -->
+          <div style="text-align:center;min-width:60px;">
+            <div style="font-family:var(--font-h);font-size:28px;font-weight:800;{{ 'color:var(--green)' if score>=75 else 'color:var(--amber)' if score>=50 else 'color:var(--red)' }};">{{ score|int }}%</div>
+            <div style="font-size:10px;color:var(--ink3);">AI Match</div>
+          </div>
+          <!-- Actions -->
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <span class="status {% if app.stage in ('Shortlisted','Interview') %}status-interview{% elif app.stage=='Offer' %}status-offer{% elif app.stage=='Hired' %}status-hired{% elif app.stage=='Rejected' %}status-closed{% else %}status-pending{% endif %}">{{ app.stage }}</span>
+            <button class="btn btn-sm btn-success" onclick="quickMove({{ app.id }},'Shortlisted',this)">Shortlist</button>
+            <button class="btn btn-sm btn-amber" onclick="quickMove({{ app.id }},'Interview',this)">Interview</button>
+          </div>
+        </div>
+        <!-- Score breakdown -->
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+          {% for label, val in [('Skills',bd.skills),('Experience',bd.experience),('Education',bd.education),('Profile',bd.profile)] %}
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;"><span style="color:var(--ink3);">{{ label }}</span><span style="font-weight:600;">{{ val|int }}%</span></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:{{ val }}%;background:{% if val>=75 %}var(--green){% elif val>=50 %}var(--amber){% else %}var(--red){% endif %};"></div></div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if bd.matched_skills %}
+        <div style="margin-top:10px;font-size:12px;">
+          <span style="color:var(--ink3);margin-right:6px;">Matched:</span>
+          {% for sk in bd.matched_skills %}<span class="tag tag-green" style="font-size:10px;margin:2px;">✓ {{ sk.title() }}</span>{% endfor %}
+          {% for sk in bd.missing_skills %}<span class="tag tag-red" style="font-size:10px;margin:2px;">✗ {{ sk.title() }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-icon">🤖</div><p>No applications yet for this job.</p><a href="/company/dashboard" class="btn btn-outline" style="margin-top:14px;">Back to Dashboard</a></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+async function quickMove(appId, stage, btn){
+  const fd = new FormData(); fd.append('stage',stage);
+  const res = await fetch(`/company/application/${appId}/stage`,{method:'POST',body:fd});
+  const d = await res.json();
+  if(d.ok){ btn.textContent='✓ '+stage; btn.className='btn btn-sm btn-outline'; btn.disabled=true; }
+}
+</script>
+{% endblock %}

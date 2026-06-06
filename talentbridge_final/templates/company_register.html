@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Register Company — TalentBridge{% endblock %}
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:32px;">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:32px;width:100%;max-width:500px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:36px;margin-bottom:10px;">🏢</div>
+      <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;">Register your company</h2>
+      <p class="text-muted" style="font-size:13px;margin-top:4px;">Post jobs, rank resumes with AI, manage your pipeline</p>
+    </div>
+    <form method="POST">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Company name *</label><input class="form-input" name="name" placeholder="Acme Corp" required/></div>
+        <div class="form-group"><label class="form-label">Industry</label>
+          <select class="form-select" name="industry">
+            {% for i in ['Technology','Finance','Healthcare','Education','E-commerce','Manufacturing','Media','Other'] %}
+            <option>{{ i }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Company email *</label><input class="form-input" name="email" type="email" placeholder="hr@company.com" required/></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Company size</label>
+          <select class="form-select" name="size">
+            {% for s in ['1–50','51–200','201–1000','1000–5000','5000+'] %}<option>{{ s }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" name="location" placeholder="Bangalore, India"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Password *</label><input class="form-input" name="password" type="password" placeholder="Min. 6 characters" required/></div>
+      <button class="btn btn-success btn-full btn-lg" type="submit" style="margin-top:4px;">Create company account →</button>
+    </form>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--ink3);">Already registered? <a href="/company/login" style="color:var(--green);">Log in</a></div>
+    <div class="divider"></div>
+    <div style="text-align:center;font-size:13px;color:var(--ink3);">Looking for a job? <a href="/candidate/register" style="color:var(--accent);">Candidate signup</a></div>
+  </div>
+</div>
+{% endblock %}

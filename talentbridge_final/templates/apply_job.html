@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Apply — {{ job.title }} | TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <a href="/jobs/{{ job.id }}" style="font-size:13px;color:#9ca3af;display:inline-block;margin-bottom:16px;">← Back to job</a>
+    <h1>Apply for {{ job.title }}</h1>
+    <p>{{ job.company_name }} · {{ job.location }}</p>
+  </div>
+</div>
+<div class="container" style="padding:32px 24px;display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start;">
+  <div>
+    <!-- AI score alert -->
+    <div style="background:{% if score>=75 %}#f0fdf4{% elif score>=50 %}#fefce8{% else %}#fef2f2{% endif %};border:1.5px solid {% if score>=75 %}#bbf7d0{% elif score>=50 %}#fde68a{% else %}#fecaca{% endif %};border-radius:10px;padding:16px;margin-bottom:20px;display:flex;align-items:center;gap:16px;">
+      <div class="score-circle">
+        <div class="score-num {{ 'score-high' if score>=75 else 'score-mid' if score>=50 else 'score-low' }}">{{ score }}%</div>
+        <div class="score-label">AI Match</div>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">{% if score>=75 %}🎉 Excellent match!{% elif score>=50 %}👍 Good match{% else %}⚠️ Partial match{% endif %}</div>
+        <div style="font-size:13px;color:var(--ink2);">Matched skills: <strong>{{ breakdown.matched_skills|join(', ') or 'None' }}</strong></div>
+        {% if breakdown.missing_skills %}
+        <div style="font-size:12px;color:var(--ink3);">Missing: {{ breakdown.missing_skills|join(', ') }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;">
+      <h3 style="font-family:var(--font-h);font-size:16px;margin-bottom:20px;">Your application</h3>
+      <!-- Resume -->
+      <div style="display:flex;align-items:center;gap:12px;background:var(--s2);border-radius:9px;padding:14px;margin-bottom:20px;border:1.5px solid var(--border);">
+        <span style="font-size:24px;">📄</span>
+        <div style="flex:1;">
+          {% if cand.resume_file %}
+          <div style="font-size:13px;font-weight:600;">{{ cand.resume_file }}</div>
+          <div style="font-size:11px;color:var(--ink3);">Your uploaded resume will be shared</div>
+          {% else %}
+          <div style="font-size:13px;font-weight:600;color:var(--red);">No resume uploaded</div>
+          <div style="font-size:11px;color:var(--ink3);">Upload a resume to improve your match score</div>
+          {% endif %}
+        </div>
+        <a href="/candidate/upload-resume" class="btn btn-sm btn-outline">{% if cand.resume_file %}Update{% else %}Upload{% endif %}</a>
+      </div>
+      <form method="POST">
+        <div class="form-group">
+          <label class="form-label">Cover letter <span style="color:var(--ink3);">(optional)</span></label>
+          <textarea class="form-textarea" name="cover_letter" placeholder="Why are you a great fit? 2–3 sentences work best." style="min-height:120px;"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Expected salary (LPA)</label>
+            <input class="form-input" name="expected_salary" value="{{ cand.expected_salary or '' }}" placeholder="e.g. 20–30"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notice period</label>
+            <select class="form-select" name="notice_period">
+              {% for np in ['Immediate','15 days','30 days','60 days','90 days'] %}
+              <option value="{{ np }}">{{ np }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" type="submit">Submit application →</button>
+      </form>
+    </div>
+  </div>
+
+  <div>
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px;">Score breakdown</div>
+      {% for label, val in [('Skills match', breakdown.skills),('Experience', breakdown.experience),('Education', breakdown.education),('Profile completeness', breakdown.profile)] %}
+      <div class="prog-wrap">
+        <div class="prog-label"><span style="font-size:12px;">{{ label }}</span><span style="font-size:12px;font-weight:600;">{{ val }}%</span></div>
+        <div class="prog-bar"><div class="prog-fill" style="width:{{ val }}%;background:{% if val>=75 %}var(--green){% elif val>=50 %}var(--amber){% else %}var(--red){% endif %};"></div></div>
+      </div>
+      {% endfor %}
+    </div>
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Your profile</div>
+      <div style="font-size:13px;color:var(--ink2);line-height:2;">
+        <div>👤 {{ cand.name }}</div>
+        <div>📍 {{ cand.location or '—' }}</div>
+        <div>💼 {{ cand.experience or 0 }} years exp</div>
+        <div>🎓 {{ cand.education or '—' }}</div>
+      </div>
+      <a href="/candidate/profile" class="btn btn-outline btn-sm btn-full" style="margin-top:12px;">Edit profile →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

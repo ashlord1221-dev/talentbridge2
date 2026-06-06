@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Create Candidate Account — TalentBridge{% endblock %}
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:32px;">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:32px;width:100%;max-width:460px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:36px;margin-bottom:10px;">👤</div>
+      <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;">Create candidate account</h2>
+      <p class="text-muted" style="font-size:13px;margin-top:4px;">Find your dream job with AI-powered matching</p>
+    </div>
+    <form method="POST">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Full name *</label><input class="form-input" name="name" placeholder="Arjun Sharma" required/></div>
+        <div class="form-group"><label class="form-label">Phone</label><input class="form-input" name="phone" placeholder="+91 98765 43210"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email *</label><input class="form-input" name="email" type="email" placeholder="you@email.com" required/></div>
+      <div class="form-group"><label class="form-label">Location</label><input class="form-input" name="location" placeholder="Chennai, Tamil Nadu"/></div>
+      <div class="form-group"><label class="form-label">Password *</label><input class="form-input" name="password" type="password" placeholder="Min. 6 characters" required/></div>
+      <button class="btn btn-primary btn-full btn-lg" type="submit" style="margin-top:4px;">Create account →</button>
+    </form>
+    <div style="text-align:center;margin-top:16px;font-size:13px;color:var(--ink3);">Already have an account? <a href="/candidate/login" style="color:var(--accent);">Log in</a></div>
+    <div class="divider"></div>
+    <div style="text-align:center;font-size:13px;color:var(--ink3);">Are you a company? <a href="/company/register" style="color:var(--green);">Register here</a></div>
+  </div>
+</div>
+{% endblock %}

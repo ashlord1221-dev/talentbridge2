@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Candidate Login — TalentBridge{% endblock %}
+{% block content %}
+<div style="min-height:80vh;display:flex;align-items:center;justify-content:center;padding:32px;">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:32px;width:100%;max-width:400px;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-size:36px;margin-bottom:10px;">👤</div>
+      <h2 style="font-family:var(--font-h);font-size:22px;font-weight:800;">Candidate login</h2>
+      <p class="text-muted" style="font-size:13px;margin-top:4px;">Welcome back! Find your next opportunity.</p>
+    </div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:#1e40af;">
+      Demo: <strong>arjun@demo.com</strong> / <strong>demo123</strong>
+    </div>
+    <form method="POST">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" name="email" type="email" placeholder="you@email.com" required/></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" name="password" type="password" placeholder="••••••••" required/></div>
+      <button class="btn btn-primary btn-full btn-lg" type="submit">Log in →</button>
+    </form>
+    <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--ink3);">No account? <a href="/candidate/register" style="color:var(--accent);">Sign up free</a></div>
+    <div class="divider"></div>
+    <div style="text-align:center;font-size:13px;color:var(--ink3);">Are you a company? <a href="/company/login" style="color:var(--green);">Company login</a></div>
+  </div>
+</div>
+{% endblock %}

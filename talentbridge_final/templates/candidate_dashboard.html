@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div>
+      <h1>Welcome back, {{ cand.name }} 👋</h1>
+      <p>Your job search dashboard · {{ cand.location or 'No location set' }}</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="/candidate/upload-resume" class="btn btn-primary">📄 Update Resume</a>
+      <a href="/candidate/profile" class="btn btn-ghost">Edit Profile</a>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="container">
+    <!-- Stats -->
+    <div class="grid-4" style="margin-bottom:28px;">
+      {% for label, val, color in [('Applications',stats.applied,'var(--accent)'),('Shortlisted',stats.shortlisted,'var(--green)'),('Interviews',stats.interviews,'var(--purple)'),('Saved Jobs',stats.saved,'var(--amber)')] %}
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-family:var(--font-h);font-size:32px;font-weight:800;color:{{ color }};">{{ val }}</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:4px;">{{ label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Profile completeness -->
+    {% set complete = [cand.resume_file, cand.skills, cand.bio, cand.education, cand.phone, cand.location] %}
+    {% set pct = (complete|select|list|length * 100 // 6) %}
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:24px;display:flex;align-items:center;gap:16px;">
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Profile completeness — {{ pct }}%</div>
+        <div class="prog-bar" style="height:8px;"><div class="prog-fill" style="width:{{ pct }}%;background:{% if pct>=80 %}var(--green){% elif pct>=50 %}var(--amber){% else %}var(--red){% endif %};"></div></div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:6px;">
+          {% if not cand.resume_file %}<span style="color:var(--red);">✗ Resume</span> {% endif %}
+          {% if not cand.skills %}<span style="color:var(--red);">✗ Skills</span> {% endif %}
+          {% if not cand.bio %}<span style="color:var(--amber);">✗ Bio</span> {% endif %}
+          {% if pct==100 %}<span style="color:var(--green);">✓ Profile complete!</span>{% endif %}
+        </div>
+      </div>
+      <a href="/candidate/profile" class="btn btn-outline btn-sm">Complete →</a>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-wrap">
+      <div class="tabs">
+        <button class="tab active" data-tab="tab-apps" onclick="showTab('tab-apps')">My Applications ({{ apps|length }})</button>
+        <button class="tab" data-tab="tab-saved" onclick="showTab('tab-saved')">Saved Jobs ({{ saved|length }})</button>
+        <button class="tab" data-tab="tab-rec" onclick="showTab('tab-rec')">Recommended</button>
+        <button class="tab" data-tab="tab-skills" onclick="showTab('tab-skills')">My Skills</button>
+      </div>
+      <div class="tab-content">
+        <!-- Applications -->
+        <div id="tab-apps" class="tab-panel active">
+          {% if apps %}
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            {% for app in apps %}
+            <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <div style="width:42px;height:42px;border-radius:10px;background:{{ app.logo_bg }};color:{{ app.logo_color }};display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:16px;font-weight:800;flex-shrink:0;">{{ app.logo_letter }}</div>
+              <div style="flex:1;min-width:140px;">
+                <div style="font-size:14px;font-weight:600;">{{ app.title }}</div>
+                <div style="font-size:12px;color:var(--ink3);">{{ app.company_name }} · {{ app.location }} · {{ app.salary }}</div>
+                <div style="font-size:11px;color:var(--ink3);margin-top:2px;">Applied {{ app.applied_at[:10] }}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span class="status {% if app.stage in ('Shortlisted','Interview') %}status-interview{% elif app.stage=='Offer' %}status-offer{% elif app.stage=='Hired' %}status-hired{% elif app.stage=='Rejected' %}status-closed{% else %}status-pending{% endif %}">{{ app.stage }}</span>
+                <div class="score-circle" title="AI Match Score">
+                  <div class="score-num {{ 'score-high' if app.ai_score>=75 else 'score-mid' if app.ai_score>=50 else 'score-low' }}" style="font-size:18px;">{{ app.ai_score|int }}%</div>
+                </div>
+                <a href="/jobs/{{ app.job_id }}" class="btn btn-sm btn-outline">View →</a>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty"><div class="empty-icon">📋</div><p>No applications yet.</p><a href="/jobs" class="btn btn-primary" style="margin-top:14px;">Browse jobs →</a></div>
+          {% endif %}
+        </div>
+
+        <!-- Saved -->
+        <div id="tab-saved" class="tab-panel">
+          {% if saved %}
+          <div class="grid-3">
+            {% for job in saved %}
+            <a href="/jobs/{{ job.id }}" style="text-decoration:none;">
+              <div class="card">
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+                  <div style="width:40px;height:40px;border-radius:9px;background:{{ job.logo_bg }};color:{{ job.logo_color }};display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:15px;font-weight:800;">{{ job.logo_letter }}</div>
+                  <div><div style="font-size:13px;font-weight:600;">{{ job.title }}</div><div style="font-size:12px;color:var(--ink3);">{{ job.company_name }}</div></div>
+                </div>
+                <div style="font-size:13px;font-weight:600;color:var(--green);">{{ job.salary }}</div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty"><div class="empty-icon">⭐</div><p>No saved jobs.</p></div>
+          {% endif %}
+        </div>
+
+        <!-- Recommended -->
+        <div id="tab-rec" class="tab-panel">
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1e40af;">🤖 Jobs recommended based on your skills: <strong>{{ cand.skills or 'No skills set yet' }}</strong></div>
+          <div class="grid-3">
+            {% for job in recommended %}
+            <a href="/jobs/{{ job.id }}" style="text-decoration:none;">
+              <div class="card">
+                <div style="display:flex;gap:10px;align-items:center;margin-bottom:10px;">
+                  <div style="width:40px;height:40px;border-radius:9px;background:{{ job.logo_bg }};color:{{ job.logo_color }};display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:15px;font-weight:800;">{{ job.logo_letter }}</div>
+                  <div><div style="font-size:13px;font-weight:600;">{{ job.title }}</div><div style="font-size:12px;color:var(--ink3);">{{ job.company_name }}</div></div>
+                </div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px;">
+                  {% for sk in job.skills_req.split(',')[:3] %}<span class="tag tag-blue">{{ sk.strip() }}</span>{% endfor %}
+                </div>
+                <div style="font-size:13px;font-weight:600;color:var(--green);">{{ job.salary }}</div>
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div id="tab-skills" class="tab-panel">
+          <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;max-width:600px;">
+            <h3 style="font-family:var(--font-h);font-size:15px;margin-bottom:14px;">Your skills from resume</h3>
+            {% if cand.skills %}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+              {% for sk in cand.skills.split(',') %}
+              {% if sk.strip() %}<span class="tag tag-blue" style="font-size:13px;padding:5px 12px;">{{ sk.strip() }}</span>{% endif %}
+              {% endfor %}
+            </div>
+            {% else %}
+            <p style="color:var(--ink3);font-size:13px;margin-bottom:16px;">No skills added yet. Upload your resume or edit your profile.</p>
+            {% endif %}
+            <div style="display:flex;gap:10px;">
+              <a href="/candidate/upload-resume" class="btn btn-primary btn-sm">Upload Resume</a>
+              <a href="/candidate/profile" class="btn btn-outline btn-sm">Edit Skills</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

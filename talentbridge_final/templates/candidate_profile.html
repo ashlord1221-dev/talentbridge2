@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}My Profile — TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container"><h1>My Profile</h1><p>Keep your profile updated to get better job matches.</p></div>
+</div>
+<div class="container" style="padding:32px 24px;">
+  <form method="POST">
+    <div class="grid-2" style="align-items:start;gap:20px;">
+      <div>
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;">
+          <h3 style="font-family:var(--font-h);font-size:15px;margin-bottom:18px;">Personal information</h3>
+          <div class="form-group"><label class="form-label">Full name *</label><input class="form-input" name="name" value="{{ cand.name }}" required/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Email</label><input class="form-input" value="{{ cand.email }}" disabled style="background:var(--s2);"/></div>
+            <div class="form-group"><label class="form-label">Phone</label><input class="form-input" name="phone" value="{{ cand.phone or '' }}" placeholder="+91 98765 43210"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Location</label><input class="form-input" name="location" value="{{ cand.location or '' }}" placeholder="City, State"/></div>
+          <div class="form-group"><label class="form-label">LinkedIn URL</label><input class="form-input" name="linkedin" value="{{ cand.linkedin or '' }}" placeholder="https://linkedin.com/in/yourname"/></div>
+          <div class="form-group"><label class="form-label">Bio / Summary</label><textarea class="form-textarea" name="bio" placeholder="Brief professional summary...">{{ cand.bio or '' }}</textarea></div>
+        </div>
+      </div>
+      <div>
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px;">
+          <h3 style="font-family:var(--font-h);font-size:15px;margin-bottom:18px;">Career details</h3>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Years of experience</label><input class="form-input" name="experience" type="number" value="{{ cand.experience or 0 }}" min="0" max="50"/></div>
+            <div class="form-group"><label class="form-label">Education</label><input class="form-input" name="education" value="{{ cand.education or '' }}" placeholder="B.Tech CS, IIT Madras"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Skills <span style="color:var(--ink3);">(comma-separated)</span></label>
+            <textarea class="form-textarea" name="skills" placeholder="React, Python, SQL, Docker…" style="min-height:80px;">{{ cand.skills or '' }}</textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Expected salary (LPA)</label><input class="form-input" name="expected_salary" value="{{ cand.expected_salary or '' }}" placeholder="20–30"/></div>
+            <div class="form-group"><label class="form-label">Work preference</label>
+              <select class="form-select" name="work_pref">
+                {% for wp in ['Any','Remote','Hybrid','On-site'] %}
+                <option value="{{ wp }}" {% if cand.work_pref==wp %}selected{% endif %}>{{ wp }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- Resume status -->
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;">
+          <h3 style="font-family:var(--font-h);font-size:15px;margin-bottom:14px;">Resume</h3>
+          {% if cand.resume_file %}
+          <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border-radius:8px;padding:12px;">
+            <span style="font-size:22px;">📄</span>
+            <div style="flex:1;"><div style="font-size:13px;font-weight:600;">{{ cand.resume_file }}</div><div style="font-size:11px;color:var(--green);">✓ Uploaded</div></div>
+          </div>
+          {% else %}
+          <div style="background:#fef2f2;border-radius:8px;padding:12px;font-size:13px;color:var(--red);">⚠️ No resume uploaded. Upload to improve your match score.</div>
+          {% endif %}
+          <a href="/candidate/upload-resume" class="btn btn-outline btn-sm" style="margin-top:10px;">{% if cand.resume_file %}Update Resume{% else %}Upload Resume{% endif %}</a>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:8px;display:flex;gap:10px;">
+      <button class="btn btn-primary btn-lg" type="submit">Save profile →</button>
+      <a href="/candidate/dashboard" class="btn btn-outline btn-lg">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

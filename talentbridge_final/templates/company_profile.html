@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Company Settings — TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><h1>Company Settings</h1><p>Manage your company profile and preferences.</p></div></div>
+<div class="container" style="padding:32px 24px;max-width:700px;">
+  <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;">
+    <form method="POST">
+      <h3 style="font-family:var(--font-h);font-size:16px;margin-bottom:18px;">Company information</h3>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Company name *</label><input class="form-input" name="name" value="{{ comp.name }}" required/></div>
+        <div class="form-group"><label class="form-label">Industry</label>
+          <select class="form-select" name="industry">{% for i in ['Technology','Finance','Healthcare','Education','E-commerce','Manufacturing','Media','Other'] %}<option {% if comp.industry==i %}selected{% endif %}>{{ i }}</option>{% endfor %}</select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Company size</label>
+          <select class="form-select" name="size">{% for s in ['1–50','51–200','201–1000','1000–5000','5000+'] %}<option {% if comp.size==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select>
+        </div>
+        <div class="form-group"><label class="form-label">Location</label><input class="form-input" name="location" value="{{ comp.location or '' }}" placeholder="Bangalore, India"/></div>
+      </div>
+      <div class="form-group"><label class="form-label">Website</label><input class="form-input" name="website" value="{{ comp.website or '' }}" placeholder="https://yourcompany.com"/></div>
+      <div class="form-group"><label class="form-label">About your company</label><textarea class="form-textarea" name="about" style="min-height:120px;" placeholder="Brief description shown on job listings…">{{ comp.about or '' }}</textarea></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" value="{{ comp.email }}" disabled style="background:var(--s2);"/></div>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="btn btn-success btn-lg" type="submit">Save changes →</button>
+        <a href="/company/dashboard" class="btn btn-outline btn-lg">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

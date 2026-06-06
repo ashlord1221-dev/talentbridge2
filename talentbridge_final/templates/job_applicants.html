@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Applicants — {{ job.title }} | TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <a href="/company/dashboard" style="font-size:13px;color:#9ca3af;display:inline-block;margin-bottom:14px;">← Dashboard</a>
+    <h1>Applicants for {{ job.title }}</h1>
+    <p>{{ ranked|length }} candidates · sorted by AI match score</p>
+  </div>
+</div>
+<div class="section">
+  <div class="container">
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <a href="/company/ranking/{{ job.id }}" class="btn btn-primary">🤖 Full AI Ranking View</a>
+      <a href="/jobs/{{ job.id }}" class="btn btn-outline">View Job Post</a>
+    </div>
+    {% if ranked %}
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      {% for app, score, bd in ranked %}
+      <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="width:38px;height:38px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:13px;font-weight:700;flex-shrink:0;">{{ app.name[:2].upper() }}</div>
+        <div style="flex:1;min-width:120px;">
+          <div style="font-size:13px;font-weight:600;">{{ app.name }}</div>
+          <div style="font-size:12px;color:var(--ink3);">{{ app.experience or 0 }} yrs · {{ app.education or '—' }}</div>
+          <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px;">
+            {% for sk in (app.skills or '').split(',')[:4] %}{% if sk.strip() %}<span class="tag tag-blue" style="font-size:10px;">{{ sk.strip() }}</span>{% endif %}{% endfor %}
+          </div>
+        </div>
+        <div style="text-align:center;min-width:52px;">
+          <div style="font-family:var(--font-h);font-size:22px;font-weight:800;{{ 'color:var(--green)' if score>=75 else 'color:var(--amber)' if score>=50 else 'color:var(--red)' }};">{{ score|int }}%</div>
+          <div style="font-size:10px;color:var(--ink3);">match</div>
+        </div>
+        <span class="status {% if app.stage in ('Shortlisted','Interview') %}status-interview{% elif app.stage=='Offer' %}status-offer{% elif app.stage=='Hired' %}status-hired{% elif app.stage=='Rejected' %}status-closed{% else %}status-pending{% endif %}">{{ app.stage }}</span>
+        {% if app.notice_period %}<span style="font-size:11px;color:var(--ink3);">Notice: {{ app.notice_period }}</span>{% endif %}
+        <div style="display:flex;gap:6px;">
+          {% for s,cls in [('Shortlist','btn-success'),('Interview','btn-amber'),('Reject','btn-danger')] %}
+          <button class="btn btn-sm {{ cls }}" onclick="quickMove({{ app.id }},'{{ 'Shortlisted' if s=='Shortlist' else s }}',this)">{{ s }}</button>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty"><div class="empty-icon">👥</div><p>No applications yet.</p></div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+async function quickMove(appId, stage, btn){
+  const fd = new FormData(); fd.append('stage',stage);
+  await fetch(`/company/application/${appId}/stage`,{method:'POST',body:fd});
+  btn.textContent='✓'; btn.disabled=true;
+}
+</script>
+{% endblock %}

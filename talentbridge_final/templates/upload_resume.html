@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Upload Resume — TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container"><h1>Upload Your Resume</h1><p>Our AI will parse your resume to extract skills and improve job match scores.</p></div>
+</div>
+<div class="container" style="padding:32px 24px;display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:start;">
+  <div>
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;">
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:14px 16px;margin-bottom:24px;font-size:13px;color:#1e40af;">
+        🤖 <strong>AI Resume Parsing</strong> — We extract your skills, experience, and education automatically from PDF, DOC, DOCX, or TXT files.
+      </div>
+      <form method="POST" enctype="multipart/form-data">
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('resume').click()"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             ondrop="handleDrop(event)">
+          <div class="upload-icon" id="upload-icon">📄</div>
+          <p style="font-size:15px;font-weight:600;margin-bottom:6px;" id="upload-text">Click to browse or drag & drop</p>
+          <p style="font-size:13px;color:var(--ink3);" id="upload-sub">Supported: PDF, DOC, DOCX, TXT — Max 10MB</p>
+          <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx,.txt" style="display:none;" onchange="showFile(this)"/>
+        </div>
+        <div id="file-preview" style="display:none;background:var(--s2);border-radius:9px;padding:14px;margin-top:14px;display:none;align-items:center;gap:12px;">
+          <span style="font-size:24px;">📄</span>
+          <div style="flex:1;"><div id="file-name" style="font-size:13px;font-weight:600;"></div><div id="file-size" style="font-size:11px;color:var(--ink3);"></div></div>
+          <button type="button" class="btn btn-sm btn-outline" onclick="clearFile()">Remove</button>
+        </div>
+        <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+          <label class="form-label">Or link your LinkedIn profile</label>
+          <input class="form-input" name="linkedin_url" placeholder="https://linkedin.com/in/yourname"/>
+        </div>
+        <button class="btn btn-primary btn-full btn-lg" type="submit" style="margin-top:20px;">Upload & Analyse Resume →</button>
+      </form>
+    </div>
+  </div>
+  <div>
+    {% if cand.resume_file %}
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:14px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Current resume</div>
+      <div style="display:flex;align-items:center;gap:10px;background:var(--s2);border-radius:8px;padding:12px;">
+        <span style="font-size:22px;">📄</span>
+        <div><div style="font-size:13px;font-weight:600;">{{ cand.resume_file }}</div><div style="font-size:11px;color:var(--green);">✓ Active</div></div>
+      </div>
+    </div>
+    {% endif %}
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:20px;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px;">What we extract</div>
+      {% for item in [('🛠️ Skills','React, Python, SQL…'),('💼 Experience','Years of work'),('🎓 Education','Degree & institution'),('📊 Projects','Portfolio items')] %}
+      <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span>{{ item[0] }}</span><span style="color:var(--ink3);">{{ item[1] }}</span>
+      </div>
+      {% endfor %}
+      <div style="font-size:12px;color:var(--ink3);margin-top:12px;line-height:1.6;">Extracted data merges with your existing profile and improves your AI match score across all jobs.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+function showFile(input){
+  const f = input.files[0];
+  if(!f) return;
+  document.getElementById('upload-icon').textContent='✅';
+  document.getElementById('upload-text').textContent=f.name;
+  document.getElementById('upload-sub').textContent=(f.size/1024).toFixed(0)+' KB — ready to upload';
+  document.getElementById('upload-zone').style.borderColor='var(--green)';
+  document.getElementById('upload-zone').style.background='#f0fdf4';
+}
+function clearFile(){
+  document.getElementById('resume').value='';
+  document.getElementById('upload-icon').textContent='📄';
+  document.getElementById('upload-text').textContent='Click to browse or drag & drop';
+  document.getElementById('upload-sub').textContent='Supported: PDF, DOC, DOCX, TXT — Max 10MB';
+  document.getElementById('upload-zone').style.borderColor='';
+  document.getElementById('upload-zone').style.background='';
+}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag');
+  const f = e.dataTransfer.files[0];
+  if(f){
+    const inp = document.getElementById('resume');
+    const dt = new DataTransfer(); dt.items.add(f); inp.files = dt.files;
+    showFile(inp);
+  }
+}
+</script>
+{% endblock %}

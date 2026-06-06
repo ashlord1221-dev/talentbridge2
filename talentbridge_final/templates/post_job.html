@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Post a Job — TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero"><div class="container"><h1>Post a New Job</h1><p>Fill in the details to attract the right candidates.</p></div></div>
+<div class="container" style="padding:32px 24px;">
+  <div style="max-width:720px;">
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:28px;">
+      <form method="POST">
+        <h3 style="font-family:var(--font-h);font-size:16px;margin-bottom:18px;">Basic details</h3>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Job title *</label><input class="form-input" name="title" placeholder="Senior React Developer" required/></div>
+          <div class="form-group"><label class="form-label">Department</label>
+            <select class="form-select" name="department">
+              {% for d in ['Engineering','Data','Product','Design','Marketing','Operations','Finance','HR','Other'] %}<option>{{ d }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Job type</label>
+            <select class="form-select" name="job_type">{% for t in ['Full-time','Part-time','Contract','Internship','Freelance'] %}<option>{{ t }}</option>{% endfor %}</select>
+          </div>
+          <div class="form-group"><label class="form-label">Work mode</label>
+            <select class="form-select" name="work_mode">{% for m in ['On-site','Remote','Hybrid'] %}<option>{{ m }}</option>{% endfor %}</select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Location</label><input class="form-input" name="location" placeholder="Bangalore, India"/></div>
+          <div class="form-group"><label class="form-label">Salary range</label><input class="form-input" name="salary" placeholder="₹20–35 LPA"/></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Min. experience (years)</label><input class="form-input" name="experience_req" type="number" value="0" min="0"/></div>
+          <div class="form-group"><label class="form-label">Application deadline</label><input class="form-input" name="deadline" type="date"/></div>
+        </div>
+        <div class="divider"></div>
+        <h3 style="font-family:var(--font-h);font-size:16px;margin-bottom:18px;">Job content</h3>
+        <div class="form-group">
+          <label class="form-label">Required skills <span style="color:var(--ink3);">(comma-separated — used for AI ranking)</span></label>
+          <input class="form-input" name="skills_req" placeholder="React, TypeScript, Node.js, Docker"/>
+          <div class="form-hint">These skills are matched against candidate resumes to compute AI scores.</div>
+        </div>
+        <div class="form-group"><label class="form-label">Job description *</label><textarea class="form-textarea" name="description" style="min-height:130px;" placeholder="Describe the role, team, and what success looks like…" required></textarea></div>
+        <div class="form-group"><label class="form-label">Requirements <span style="color:var(--ink3);">(one per line)</span></label><textarea class="form-textarea" name="requirements" style="min-height:100px;" placeholder="5+ years React experience&#10;TypeScript proficiency&#10;Strong communication skills"></textarea></div>
+        <label class="form-check" style="margin-bottom:20px;">
+          <input type="checkbox" name="featured" value="1"/> Mark as featured job (shown prominently on homepage)
+        </label>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-success btn-lg" type="submit">Publish job →</button>
+          <a href="/company/dashboard" class="btn btn-outline btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

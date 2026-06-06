@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Company Dashboard — {{ comp.name }} | TalentBridge{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+    <div style="display:flex;align-items:center;gap:14px;">
+      <div style="width:52px;height:52px;border-radius:12px;background:{{ comp.logo_bg }};color:{{ comp.logo_color }};display:flex;align-items:center;justify-content:center;font-family:var(--font-h);font-size:22px;font-weight:800;">{{ comp.logo_letter }}</div>
+      <div><h1 style="font-size:24px;">{{ comp.name }}</h1><p>{{ comp.industry }} · {{ comp.location }}</p></div>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <a href="/company/post-job" class="btn btn-success btn-lg">+ Post New Job</a>
+      <a href="/company/profile" class="btn btn-ghost">Settings</a>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="container">
+    <!-- Stats -->
+    <div class="grid-4" style="margin-bottom:28px;">
+      {% for label, val, color in [('Active Jobs',stats.active_jobs,'var(--accent)'),('Total Applicants',stats.total_apps,'var(--green)'),('Shortlisted',stats.shortlisted,'var(--purple)'),('Hired',stats.hired,'var(--amber)')] %}
+      <div class="card" style="text-align:center;padding:20px;">
+        <div style="font-family:var(--font-h);font-size:32px;font-weight:800;color:{{ color }};">{{ val }}</div>
+        <div style="font-size:12px;color:var(--ink3);margin-top:4px;">{{ label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-wrap">
+      <div class="tabs">
+        <button class="tab active" data-tab="tab-pipeline" onclick="showTab('tab-pipeline')">Candidate Pipeline</button>
+        <button class="tab" data-tab="tab-jobs" onclick="showTab('tab-jobs')">Job Postings ({{ jobs|length }})</button>
+        <button class="tab" data-tab="tab-ai" onclick="showTab('tab-ai')">AI Rankings</button>
+      </div>
+      <div class="tab-content">
+
+        <!-- PIPELINE -->
+        <div id="tab-pipeline" class="tab-panel active">
+          <div style="font-size:13px;color:var(--ink3);margin-bottom:14px;">Drag-and-drop pipeline — click a candidate card to update their stage.</div>
+          <div class="pipeline">
+            {% set stage_colors = {'Applied':'var(--accent)','Shortlisted':'var(--purple)','Interview':'var(--amber)','Offer':'var(--green)','Hired':'#166534','Rejected':'var(--red)'} %}
+            {% for stage in ['Applied','Shortlisted','Interview','Offer','Hired','Rejected'] %}
+            <div class="ps">
+              <div class="ps-head" style="color:{{ stage_colors[stage] }};">
+                {{ stage }}
+                <span style="background:{{ stage_colors[stage] }};color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;">{{ pipeline[stage]|length }}</span>
+              </div>
+              {% for app in pipeline[stage] %}
+              <div class="ps-card" onclick="openStageModal({{ app.id }},'{{ app.cand_name }}','{{ stage }}')">
+                <div style="font-size:12px;font-weight:600;">{{ app.cand_name }}</div>
+                <div style="font-size:11px;color:var(--ink3);">{{ app.job_title[:22] }}{% if app.job_title|length>22 %}…{% endif %}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                  <div style="display:flex;gap:3px;flex-wrap:wrap;">
+                    {% for sk in (app.skills or '').split(',')[:2] %}{% if sk.strip() %}<span class="tag tag-blue" style="font-size:10px;padding:1px 5px;">{{ sk.strip()[:8] }}</span>{% endif %}{% endfor %}
+                  </div>
+                  <span style="font-size:11px;font-weight:700;color:{{ 'var(--green)' if app.ai_score>=75 else 'var(--amber)' if app.ai_score>=50 else 'var(--red)' }};">{{ app.ai_score|int }}%</span>
+                </div>
+              </div>
+              {% else %}
+              <div style="font-size:12px;color:var(--ink3);text-align:center;padding:16px 0;">Empty</div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- JOB POSTINGS -->
+        <div id="tab-jobs" class="tab-panel">
+          {% if jobs %}
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            {% for job in jobs %}
+            <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:140px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                  <span style="font-size:14px;font-weight:600;">{{ job.title }}</span>
+                  <span class="status {{ 'status-active' if job.status=='Active' else 'status-closed' }}">{{ job.status }}</span>
+                  {% if job.featured %}<span class="badge-featured">FEATURED</span>{% endif %}
+                </div>
+                <div style="font-size:12px;color:var(--ink3);">{{ job.job_type }} · {{ job.work_mode }} · {{ job.location }} · {{ job.salary }}</div>
+                <div style="font-size:12px;color:var(--ink3);margin-top:2px;">{{ job.app_count }} applicants · Posted {{ job.created_at[:10] }}</div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="/company/ranking/{{ job.id }}" class="btn btn-sm btn-primary">🤖 AI Rank</a>
+                <a href="/company/jobs/{{ job.id }}/applicants" class="btn btn-sm btn-outline">View All</a>
+                <button class="btn btn-sm {{ 'btn-danger' if job.status=='Active' else 'btn-success' }}" onclick="toggleJobStatus({{ job.id }},this)">{{ 'Close' if job.status=='Active' else 'Reopen' }}</button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty"><div class="empty-icon">📋</div><p>No jobs posted yet.</p><a href="/company/post-job" class="btn btn-success" style="margin-top:14px;">Post first job →</a></div>
+          {% endif %}
+        </div>
+
+        <!-- AI RANKINGS quick view -->
+        <div id="tab-ai" class="tab-panel">
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:9px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#1e40af;">🤖 Select a job below to view AI-ranked candidates. Scores are computed from skills match, experience, education & profile completeness.</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            {% for job in jobs if job.status=='Active' %}
+            <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px;">
+              <div style="flex:1;"><div style="font-size:14px;font-weight:600;">{{ job.title }}</div><div style="font-size:12px;color:var(--ink3);">{{ job.app_count }} applicants</div></div>
+              <a href="/company/ranking/{{ job.id }}" class="btn btn-primary btn-sm">View AI Rankings →</a>
+            </div>
+            {% else %}
+            <div class="empty"><div class="empty-icon">🤖</div><p>No active jobs to rank.</p></div>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stage update modal -->
+<div id="stage-modal" style="display:none;position:fixed;inset:0;background:rgba(13,13,20,.6);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:14px;padding:28px;max-width:360px;width:90%;">
+    <h3 style="font-family:var(--font-h);font-size:16px;margin-bottom:6px;" id="sm-name"></h3>
+    <p style="font-size:13px;color:var(--ink3);margin-bottom:18px;">Update candidate stage:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      {% for s in ['Applied','Shortlisted','Interview','Offer','Hired','Rejected'] %}
+      <button class="btn btn-outline btn-sm" style="justify-content:start;" onclick="updateStage('{{ s }}')">{{ s }}</button>
+      {% endfor %}
+    </div>
+    <button class="btn btn-outline btn-full" style="margin-top:14px;" onclick="closeStageModal()">Cancel</button>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+let currentAppId = null;
+function openStageModal(appId, name, stage){
+  currentAppId = appId;
+  document.getElementById('sm-name').textContent = name + ' — current: ' + stage;
+  const m = document.getElementById('stage-modal');
+  m.style.display = 'flex';
+}
+function closeStageModal(){ document.getElementById('stage-modal').style.display='none'; }
+async function updateStage(stage){
+  const fd = new FormData(); fd.append('stage', stage);
+  const res = await fetch(`/company/application/${currentAppId}/stage`, {method:'POST',body:fd});
+  const d = await res.json();
+  if(d.ok){ closeStageModal(); location.reload(); }
+}
+async function toggleJobStatus(jobId, btn){
+  const res = await fetch(`/company/jobs/${jobId}/toggle-status`,{method:'POST'});
+  const d = await res.json();
+  btn.textContent = d.status==='Active' ? 'Close' : 'Reopen';
+  btn.className = `btn btn-sm ${d.status==='Active'?'btn-danger':'btn-success'}`;
+}
+document.getElementById('stage-modal').addEventListener('click', function(e){ if(e.target===this) closeStageModal(); });
+</script>
+{% endblock %}
